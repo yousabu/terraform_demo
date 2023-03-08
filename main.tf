@@ -1,7 +1,5 @@
 provider "aws" {
     region = "us-east-1"
-    access_key = "AKIATMS2FVNAFIXY3MSR"
-    secret_key = "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"
 } 
 
 
@@ -9,14 +7,13 @@ provider "aws" {
 variable vpc_cidr_blocks {}
 variable subnet_cidr_blocks {}
 variable avail_zone {}
-variable "en" {
-  
-}
+variable env_prefix {}
+
 
 resource "aws_vpc" "myapp-vpc" {
-    cidr_block = var.cidr_blocks[0].cidr_block
-    tags = {
-      Name: var.cidr_block[0].name
+    cidr_block = var.vpc_cidr_blocks
+    tags = { 
+      Name: "${var.env_prefix}-vpc"
 
     }
 }
@@ -27,7 +24,7 @@ resource "aws_subnet" "myapp-subnet1" {
     cidr_block = var.subnet_cidr_blocks
     availability_zone = var.avail_zone
      tags = {
-      Name: "tera_sub2"
+      Name: "${var.env_prefix}-subnet-1"
     }
 
 }
