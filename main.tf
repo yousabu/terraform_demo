@@ -10,6 +10,7 @@ variable subnet_cidr_blocks {}
 variable avail_zone {}
 variable env_prefix {}
 variable my_ip {}
+variable instance_type {}
 
 
 resource "aws_vpc" "myapp-vpc" {
@@ -100,4 +101,33 @@ resource "aws_default_security_group" "default-sg" {
     "Name" = "${var.env_prefix}-default-sg"
   }
 
+}
+
+# EC2 Instance
+
+# Get The Latest Amazon AMI
+data "aws_ami" "latest-amazon-linx-image" {
+    most_recent = true
+    owners = ["amazon"]
+    filter {
+      name = "name"
+      values = [ "amzn2-ami-kernel-5.10-hvm-*-x86_64-gp2" ]
+    }
+    filter {
+      name = "virtualization-type"
+      values = [ "hvm" ]
+    }
+}
+
+output "aws_ami_id" {
+    value = data.aws_ami.latest-amazon-linx-image
+}
+
+resource "aws_instance" "my-app-server" {
+    ami = data.aws_ami.latest-amazon-linx-image.id
+    instance_type = var.instance_type
+
+    subnet_id = aws_subnet.myapp-subnet1.id
+    vpc_security_group_ids = [aws_default_security_group.default-sg.id]
+    availability_zone = var.avail_zone
 }
