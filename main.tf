@@ -9,6 +9,7 @@ variable vpc_cidr_blocks {}
 variable subnet_cidr_blocks {}
 variable avail_zone {}
 variable env_prefix {}
+variable my_ip {}
 
 
 resource "aws_vpc" "myapp-vpc" {
@@ -70,8 +71,8 @@ resource "aws_default_route_table" "main_route_table" {
 }
 
 
-resource "aws_security_group" "myapp-sg" {
-    name = "myapp-sg"
+resource "aws_default_security_group" "default-sg" {
+
     vpc_id = aws_vpc.myapp-vpc.id
 
     ingress {
@@ -80,4 +81,23 @@ resource "aws_security_group" "myapp-sg" {
       protocol = "tcp"
       cidr_blocks = [var.my_ip]
     }
+
+    ingress {
+      from_port = 8080
+      to_port = 8080
+      protocol = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    egress {
+      from_port = 0
+      to_port = 0
+      protocol = "-1"
+      cidr_blocks = ["0.0.0.0/0"]
+      prefix_list_ids = []
+    }
+  tags = {
+    "Name" = "${var.env_prefix}-default-sg"
+  }
+
 }
