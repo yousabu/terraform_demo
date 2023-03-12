@@ -1,6 +1,6 @@
 provider "aws" {
     region = "us-east-1"
-
+  
 } 
 
 
@@ -80,7 +80,7 @@ resource "aws_default_security_group" "default-sg" {
       from_port = 22
       to_port = 22
       protocol = "tcp"
-      cidr_blocks = [var.my_ip]
+      cidr_blocks = ["0.0.0.0/0"]
     }
 
     ingress {
@@ -145,13 +145,29 @@ resource "aws_instance" "my-app-server" {
 
     key_name = "aws_admin_key" # Ref the key name
 
-    user_data = <<EOF
-                    #!/bin/bash
-                    sudo yum update -y && sudo yum install -y docker
-                    sudo systemctl start docker
-                    sudo usermod -aG docker ec2-user
-                    docker run -p 8080:80 nginx
-                  EOF
+    # user_data = file("entry-script.sh")
+
+    connection {
+      type = "ssh"
+      host = self.public_ip
+      user = "ec2-user"
+      private_key = file("/home/youssef/Downloads/aws_admin_key.pem")
+    }
+
+    # provisioner "file" {
+    #   source = "entry-script.sh"
+    #   destination = "/home/ec2-user/entry-on-script.sh"
+    # }
+
+    # provisioner "remote-exec" {
+    #   inline = [
+    #     file("entry-on-script.sh")
+    #   ]
+    # }
+
+    # provisioner "local-exec" {
+    #   command = "echo ${self.public_ip} > output.txt"
+    # }
                   
     tags = {
       "Name" = "${var.env_prefix}-server"
